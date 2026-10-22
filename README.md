@@ -24,7 +24,7 @@ It reuses the credentials your existing CLIs and browser already have. No accoun
 ### Download
 
 1. Download `limitbar-<version>.dmg` from [Releases](https://github.com/Wake360/limitbar/releases). It runs on Apple silicon and Intel Macs.
-2. Open the DMG and drag limitbar into Applications.
+2. Check the download against `limitbar-<version>.dmg.sha256` from the same release: run `shasum -a 256 -c limitbar-<version>.dmg.sha256` in the download folder and look for `OK`. Then open the DMG and drag limitbar into Applications.
 3. Open limitbar from Applications. The app is not notarized by Apple, so macOS blocks the first launch. Go to System Settings > Privacy & Security, scroll to "limitbar was blocked", and click Open Anyway.
 
 If you prefer the terminal, this clears the block instead of step 3:
@@ -49,9 +49,11 @@ To start it at login, open the popover, then Settings, and turn on "Launch at lo
 
 ### Optional: a stable signing identity
 
-Without a signing certificate the script signs the app ad hoc. That works, but macOS treats every rebuild as a new app, so you click "Always Allow" on the Keychain prompts again after each update.
+Without a signing certificate the script signs the app ad hoc. That works, but macOS treats every rebuild as a new app, so Full Disk Access has to be granted again after each update.
 
-To keep those grants across rebuilds, create a self-signed certificate once:
+A self-signed certificate keeps the Full Disk Access grant across rebuilds. It does not stop the Keychain prompts: for each item you allowed, macOS also records the code hash of that exact build. After every rebuild or update, each Keychain item limitbar reads asks once for your login password. Click "Always Allow" and it stays quiet until the next build. Only an Apple Developer ID signature avoids this.
+
+To create the certificate once:
 
 1. Open Keychain Access, then Keychain Access > Certificate Assistant > Create a Certificate.
 2. Name: `limitbar Local Signing`. Identity Type: Self Signed Root. Certificate Type: Code Signing.
@@ -74,7 +76,7 @@ This runs `scripts/bundle.sh` and writes `dist/limitbar-<version>.dmg`. The vers
 | Claude | Keychain item `Claude Code-credentials` | Install [Claude Code](https://docs.claude.com/en/docs/claude-code) and run `claude` |
 | Codex | `~/.codex/auth.json` | Install the [Codex CLI](https://github.com/openai/codex) and run `codex login` |
 | Gemini | Keychain item from Antigravity (service `gemini`, account `antigravity`) | Open Antigravity and sign in |
-| Grok | The `sso` cookie for grok.com in Chrome, Brave, Arc, Edge or Chromium | Log in to grok.com in one of those browsers, or paste the cookie in Settings |
+| Grok | A pasted `sso` cookie in Settings, or the grok.com cookie in Chrome, Brave, Arc, Edge or Chromium | Paste the cookie in Settings (recommended), or log in to grok.com in one of those browsers |
 
 Providers you don't use just stay hidden from the menu bar.
 
@@ -82,8 +84,9 @@ Providers you don't use just stay hidden from the menu bar.
 
 macOS will ask for permission the first time limitbar reads each credential:
 
-- Keychain prompts for `Claude Code-credentials`, the Antigravity item and your browser's "Safe Storage" key (Grok only). Click "Always Allow".
-- If the Grok row asks for Full Disk Access, add limitbar in System Settings > Privacy & Security > Full Disk Access, then relaunch it. Or paste the cookie in Settings instead: copy the value of the `sso` cookie from grok.com in your browser's developer tools.
+- Keychain prompts for `Claude Code-credentials` and the Antigravity item. Click "Always Allow" and enter your login password. "Allow" alone works for one read only, so it would ask again at every refresh. Each new version of limitbar asks once more.
+- For Grok, paste the cookie in Settings: copy the value of the `sso` cookie from grok.com in your browser's developer tools, paste it, and press Save. With a saved cookie, limitbar never touches your browser.
+- Without a pasted cookie, limitbar reads it from your browser. That asks for your browser's "Safe Storage" Keychain key, which decrypts every cookie the browser holds for every site, and may ask for Full Disk Access, which covers all your files. Grant these only if you prefer that to pasting. For Full Disk Access, add limitbar in System Settings > Privacy & Security > Full Disk Access, then relaunch it.
 
 ## Privacy and safety
 
@@ -130,6 +133,8 @@ The Windows and Linux app lives in `tauri/` (Rust and Tauri). It is simpler than
 - Debian and Ubuntu: download `limitbar_<version>_amd64.deb` and run `sudo apt install ./limitbar_<version>_amd64.deb`.
 - Other distributions: download `limitbar_<version>_amd64.AppImage`, run `chmod +x` on it and start it.
 
+Each release has a `SHA256SUMS.txt`. Check a download before running it: `sha256sum --ignore-missing -c SHA256SUMS.txt` on Linux, or `Get-FileHash limitbar_<version>_x64-setup.exe` in PowerShell on Windows and compare it with the line in the file.
+
 On GNOME, tray icons need the AppIndicator extension (`gnome-shell-extension-appindicator`). On Windows, left-click the tray icon to open the window. On Linux, use Open limitbar in the tray menu.
 
 ### Providers on Windows and Linux
@@ -157,7 +162,7 @@ Installers land in `tauri/target/release/bundle/`.
 
 ### Releases
 
-Pushing a tag such as `v0.1.0` runs `.github/workflows/tauri.yml`, which builds the Windows and Linux installers and attaches them to a draft GitHub release. Build the macOS DMG locally with `scripts/dmg.sh` and add it to the same release.
+Pushing a tag such as `v0.1.0` runs `.github/workflows/tauri.yml`, which builds the Windows and Linux installers and attaches them to a draft GitHub release. Build the macOS DMG locally with `scripts/dmg.sh` and add the DMG and its `.sha256` file to the same release.
 
 ## Caveats
 

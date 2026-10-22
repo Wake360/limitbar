@@ -20,7 +20,7 @@ scripts/bundle.sh
 scripts/dmg.sh
 ```
 
-`scripts/bundle.sh` builds a universal (arm64 and x86_64) release, assembles `limitbar.app` and signs it with the self-signed "limitbar Local Signing" identity in the login Keychain when present (ad hoc otherwise), so Keychain and Full Disk Access grants survive rebuilds. `scripts/dmg.sh` wraps the app in `dist/limitbar-<version>.dmg` with an Applications link. Tests use swift-testing (`@Test`, `#expect`); `Package.swift` passes the Command Line Tools testing plugin path via `unsafeFlags`. `LiveProbe.swift` hits real endpoints with real Keychain credentials; exclude it from normal runs.
+`scripts/bundle.sh` builds a universal (arm64 and x86_64) release, assembles `limitbar.app` and signs it with the self-signed "limitbar Local Signing" identity in the login Keychain when present (ad hoc otherwise), so Full Disk Access survives rebuilds. Keychain items still prompt once per build: their partition list records each build's `cdhash`, because a self-signed identity has no team ID. `scripts/dmg.sh` wraps the app in `dist/limitbar-<version>.dmg` with an Applications link. Tests use swift-testing (`@Test`, `#expect`); `Package.swift` passes the Command Line Tools testing plugin path via `unsafeFlags`. `LiveProbe.swift` hits real endpoints with real Keychain credentials; exclude it from normal runs.
 
 ## Architecture
 

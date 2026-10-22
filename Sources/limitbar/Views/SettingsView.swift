@@ -11,14 +11,21 @@ struct SettingsView: View {
             Stepper("Refresh every \(refreshMinutes) min", value: $refreshMinutes, in: 1...60)
                 .onChange(of: refreshMinutes) { _, minutes in store.startTimer(interval: TimeInterval(minutes * 60)) }
             VStack(alignment: .leading, spacing: 4) {
-                SecureField("grok.com sso cookie", text: $grokCookie)
-                    .onChange(of: grokCookie) { _, value in Credentials.setKeychainString(service: Grok.cookieService, value) }
-                Text("The `sso` cookie from grok.com. Used only if limitbar can't read it from your browser.")
+                HStack {
+                    SecureField("grok.com sso cookie", text: $grokCookie)
+                        .onSubmit(saveCookie)
+                    Button("Save", action: saveCookie)
+                }
+                Text("The `sso` cookie from grok.com. When saved, limitbar uses it and never reads your browser's cookies.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
         }
         .formStyle(.grouped)
         .frame(width: 420)
+    }
+
+    private func saveCookie() {
+        Credentials.setKeychainString(service: Grok.cookieService, grokCookie.trimmingCharacters(in: .whitespacesAndNewlines))
     }
 }

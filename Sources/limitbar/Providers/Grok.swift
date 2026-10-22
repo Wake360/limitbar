@@ -4,7 +4,7 @@ enum Grok {
     static let cookieDefaultsKey = "grokSSOCookie"
     static let cookieService = "limitbar grok sso"
     static let creditsURL = URL(string: "https://grok.com/grok_api_v2.GrokBuildBilling/GetGrokCreditsConfig")!
-    static let loginHint = "log in to grok.com in Chrome or Brave, or paste the sso cookie in Settings"
+    static let loginHint = "paste the grok.com sso cookie in Settings, or log in to grok.com in Chrome or Brave"
 
     struct Field {
         let number: Int

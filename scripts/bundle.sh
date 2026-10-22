@@ -11,5 +11,5 @@ cp Assets/AppIcon.icns "$app/Contents/Resources/"
 cp -R .build/release/limitbar_limitbar.bundle "$app/Contents/Resources/"
 identity="limitbar Local Signing"
 security find-identity -p codesigning | grep -q "\"$identity\"" || identity=-
-codesign --force --deep --sign "$identity" "$app"
+codesign --force --deep --options runtime --sign "$identity" "$app"
 echo "built $app (signed with $identity)"
