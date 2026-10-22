@@ -1,0 +1,9 @@
+.build/
+*.app
+.DS_Store
+.superpowers/
+.claude/
+icons.png
+dist/
+tauri/target/
+tauri/gen/schemas/
