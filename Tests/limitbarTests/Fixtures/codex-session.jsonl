@@ -1,0 +1,5 @@
+{"timestamp":"2026-10-22T09:00:00.000Z","type":"session_meta","payload":{"id":"thread-0001","session_id":"22222222-aaaa-bbbb-cccc-000000000002","cwd":"/Users/test/dev/sampleproj"}}
+{"timestamp":"2026-10-22T09:05:00.000Z","type":"event_msg","payload":{"type":"agent_message","message":"hello"}}
+{"timestamp":"2026-10-22T09:10:00.500Z","type":"event_msg","payload":{"type":"token_count","info":null,"rate_limits":{"primary":{"used_percent":10.0,"window_minutes":300,"resets_at":1792000000},"secondary":{"used_percent":4.0,"window_minutes":10080,"resets_at":1792500000}}}}
+{"timestamp":"2026-10-22T09:20:00Z","type":"event_msg","payload":{"type":"token_count","info":null,"rate_limits":{"primary":{"used_percent":12.5,"window_minutes":300,"resets_at":1792000000},"secondary":{"used_percent":4.0,"window_minutes":10080,"resets_at":1792500000}}}}
+{"timestamp":"2026-10-22T09:30:00Z","type":"event_msg","payload":{"type":"token_count","info":null,"rate_limits":{"primary":{"used_percent":15.0,"window_minutes":300,"resets_at":1792000000},"secondary":null}}}

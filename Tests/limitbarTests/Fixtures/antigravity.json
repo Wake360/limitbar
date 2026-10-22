@@ -1,0 +1,19 @@
+{
+  "models": {
+    "claude-sonnet-5-5-high": {
+      "displayName": "Claude Sonnet 5.5 (High)",
+      "quotaInfo": { "remainingFraction": 1, "resetTime": "2026-10-22T12:00:00Z" }
+    },
+    "gemini-3-pro-high": {
+      "displayName": "Gemini 3 Pro (High)",
+      "quotaInfo": { "resetTime": "2026-10-22T11:00:00Z" }
+    },
+    "gemini-3-flash": {
+      "displayName": "Gemini 3 Flash",
+      "quotaInfo": { "remainingFraction": 0.6, "resetTime": "2026-10-28T07:00:00Z" }
+    },
+    "chat_internal": {
+      "displayName": "Internal"
+    }
+  }
+}
