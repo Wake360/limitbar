@@ -37,6 +37,10 @@ scripts/dmg.sh
 - `Drain`: what ate the window. Claude is estimated, sharing used percent across sessions by token weight. Codex is measured, from rises in `used_percent`. Three named sessions plus Other, stacked as `Band`s, and `climb` is the steepest 30-minute rise (10 points or more).
 - Views: colours live in `Views/Theme.swift` (adaptive light/dark tokens, `Provider.accent`). `MenuBarLabel` draws one non-template strip with every signed-in provider's logo and number (amber at 80% or more), or a dashed ring when none, from the pure `items`. `PopoverView` leads with the verdict and shows a `ProviderCard` per provider. `DashboardView` is a `NavigationSplitView` with a sidebar of rings, a header with the countdown, window cards, and the `DrainChart` and sessions cards.
 
+## Windows and Linux app
+
+`tauri/` is a separate Tauri 2 app for Windows and Linux. `src/providers.rs` ports the Swift parsers and fetches (tests reuse `Tests/limitbarTests/Fixtures`), `src/main.rs` runs the refresh loop, tray menu and commands, `ui/` is plain HTML and JS with no build step. Rust lives in `~/.cargo/bin`, not on PATH. Run `cargo test` in `tauri/`. `.github/workflows/tauri.yml` builds the NSIS, deb and AppImage installers on a `v*` tag.
+
 ## Credential rules
 
 - Claude (Keychain `Claude Code-credentials`) and Codex (`~/.codex/auth.json`): never refresh tokens from this app. An expired token means `loggedOut` with the login hint, because refreshing outside the CLI can invalidate its session.

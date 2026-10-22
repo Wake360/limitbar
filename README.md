@@ -2,9 +2,9 @@
 
 # limitbar
 
-A macOS menu bar app that shows how much of your AI subscription limits you have used: Claude, Codex (ChatGPT), Gemini (via Antigravity) and Grok.
+A macOS menu bar app that shows how much of your AI subscription limits you have used: Claude, Codex (ChatGPT), Gemini (via Antigravity) and Grok. A simpler tray app covers [Windows and Linux](#windows-and-linux).
 
-It reuses the credentials your existing CLIs and browser already have. No accounts, no API keys, no servers. Requests go straight from your Mac to each provider.
+It reuses the credentials your existing CLIs and browser already have. No accounts, no API keys, no servers. Requests go straight from your computer to each provider.
 
 ## What you get
 
@@ -119,6 +119,45 @@ security delete-generic-password -s "limitbar grok sso"
 ```
 
 The last command only matters if you pasted a Grok cookie.
+
+## Windows and Linux
+
+The Windows and Linux app lives in `tauri/` (Rust and Tauri). It is simpler than the macOS app: a tray icon whose menu lists the tightest limit per provider, and a window with the provider cards and settings. There is no drain chart.
+
+### Install
+
+- Windows 10 or 11: download `limitbar_<version>_x64-setup.exe` from [Releases](https://github.com/Wake360/limitbar/releases) and run it. It installs for your user only and needs no admin rights. The installer is not signed, so SmartScreen may warn: click More info, then Run anyway.
+- Debian and Ubuntu: download `limitbar_<version>_amd64.deb` and run `sudo apt install ./limitbar_<version>_amd64.deb`.
+- Other distributions: download `limitbar_<version>_amd64.AppImage`, run `chmod +x` on it and start it.
+
+On GNOME, tray icons need the AppIndicator extension (`gnome-shell-extension-appindicator`). On Windows, left-click the tray icon to open the window. On Linux, use Open limitbar in the tray menu.
+
+### Providers on Windows and Linux
+
+| Provider | Where limitbar reads credentials |
+| --- | --- |
+| Claude | `~/.claude/.credentials.json`, or `$CLAUDE_CONFIG_DIR` |
+| Codex | `~/.codex/auth.json`, or `$CODEX_HOME` |
+| Gemini | Antigravity's entry in Windows Credential Manager or the Linux Secret Service keyring. Not yet tested. |
+| Grok | Paste the `sso` cookie in the window. Browser cookies are not read. |
+
+The refresh interval is saved in the app's config folder. A pasted Grok cookie goes to the system keyring under service `limitbar`, user `grok sso`. The same credential rules apply as on macOS: Claude and Codex tokens are never refreshed.
+
+### Build from source
+
+Install Rust and the [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/) for your system, then:
+
+```sh
+cd tauri
+cargo test
+npx @tauri-apps/cli@2 build
+```
+
+Installers land in `tauri/target/release/bundle/`.
+
+### Releases
+
+Pushing a tag such as `v0.1.0` runs `.github/workflows/tauri.yml`, which builds the Windows and Linux installers and attaches them to a draft GitHub release. Build the macOS DMG locally with `scripts/dmg.sh` and add it to the same release.
 
 ## Caveats
 

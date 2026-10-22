@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>limitbar</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --canvas: #f5f6f8;
+    --card: #ffffff;
+    --border: rgba(0, 0, 0, 0.07);
+    --text: #1a1d24;
+    --muted: #6b7280;
+    --track: rgba(0, 0, 0, 0.06);
+    --warn: #d97706;
+    --warn-text: #b45309;
+    --claude: #d97757;
+    --gemini: #5b8def;
+    --neutral: #1a1d24;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --canvas: #0d1019;
+      --card: rgba(255, 255, 255, 0.04);
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #e6e8ec;
+      --muted: #9ca3af;
+      --track: rgba(255, 255, 255, 0.08);
+      --warn: #f59e0b;
+      --warn-text: #fbbf24;
+      --neutral: #e6e8ec;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 16px;
+    background: var(--canvas);
+    color: var(--text);
+    font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Ubuntu, Cantarell, sans-serif;
+  }
+  h1 { font-size: 15px; margin: 0; }
+  .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .muted { color: var(--muted); font-size: 12px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .card header { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+  .card h2 { font-size: 14px; margin: 0; color: var(--accent); }
+  .row { margin-top: 8px; }
+  .row .labels { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; }
+  .row .percent { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .row.hot .percent { color: var(--warn-text); }
+  .bar { height: 6px; border-radius: 3px; background: var(--track); margin-top: 4px; overflow: hidden; }
+  .bar span { display: block; height: 100%; background: var(--accent); }
+  .row.hot .bar span { background: var(--warn); }
+  .note { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  button, input { font: inherit; color: inherit; }
+  button {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px 10px;
+    cursor: pointer;
+  }
+  input[type=number], input[type=password] {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px 8px;
+  }
+  input[type=number] { width: 64px; }
+  input[type=password] { flex: 1; min-width: 0; }
+  .settings label { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+  .settings .cookie { display: flex; gap: 8px; margin-top: 6px; }
+  :focus-visible { outline: 2px solid var(--gemini); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>limitbar</h1>
+  <button id="refresh">Refresh</button>
+</div>
+<main id="providers" aria-live="polite"></main>
+<section class="card settings" aria-label="Settings">
+  <header><h2 style="--accent: var(--text)">Settings</h2></header>
+  <label>Refresh every <input id="minutes" type="number" min="1" max="60"> min</label>
+  <label><input id="autostart" type="checkbox"> Launch at login</label>
+  <div class="note">Grok sso cookie from grok.com (<span id="cookie-state">not set</span>)</div>
+  <div class="cookie">
+    <input id="cookie" type="password" placeholder="Paste cookie value" aria-label="Grok sso cookie">
+    <button id="save-cookie">Save</button>
+  </div>
+</section>
+<script src="app.js"></script>
+</body>
+</html>
