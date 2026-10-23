@@ -7,3 +7,4 @@ icons.png
 dist/
 tauri/target/
 tauri/gen/schemas/
+CLAUDE.md

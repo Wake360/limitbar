@@ -1,117 +1,114 @@
-<p align="center"><img src="Assets/icon.png" width="128" alt="limitbar icon"></p>
+<p align="center"><img src="Assets/icon.png" width="112" alt="limitbar icon"></p>
 
-# limitbar
+<h1 align="center">limitbar</h1>
 
-A macOS menu bar app that shows how much of your AI subscription limits you have used: Claude, Codex (ChatGPT), Gemini (via Antigravity) and Grok. A simpler tray app covers [Windows and Linux](#windows-and-linux).
+<p align="center">
+  See how much of your Claude, Codex, Gemini and Grok limits you have left, right in the macOS menu bar.
+</p>
 
-It reuses the credentials your existing CLIs and browser already have. No accounts, no API keys, no servers. Requests go straight from your computer to each provider.
+<p align="center">
+  <a href="https://github.com/Wake360/limitbar/releases"><b>Download for macOS</b></a>
+  &nbsp;|&nbsp;
+  <a href="#windows-and-linux">Windows and Linux</a>
+  &nbsp;|&nbsp;
+  <a href="#privacy">Privacy</a>
+</p>
+
+<p align="center">
+  <a href="docs/demo.mp4"><img src="docs/demo.gif" width="800" alt="limitbar demo: an agent run pushes Claude to 92% in the menu bar, the popover says Claude is nearly out and back in 1 h 35 min, and the dashboard shows which session used the limit"></a>
+</p>
+
+limitbar signs in with the credentials your CLIs and browser already have. No accounts, no API keys, no servers. Requests go straight from your Mac to each provider.
 
 ## What you get
 
-- A menu bar strip with each signed-in provider's logo and its tightest limit in percent. It turns amber at 80% or more.
-- A popover with a one-line verdict ("All clear", "Claude is nearly out") and a card per provider: 5-hour, weekly and daily windows, and when each one resets.
-- A dashboard window with a chart of what used up the window. For Claude it is estimated from Claude Code session logs, for Codex it is measured from Codex session logs.
-- Refresh every 5 minutes (configurable), on popover open, and on Cmd+R. The last known values are cached, so the bar shows data right after launch.
+**One glance in the menu bar.** Each signed-in provider shows its logo and its tightest limit in percent. The number turns amber at 80%.
 
-## Requirements
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/menubar-dark.png">
+  <img src="docs/menubar-light.png" width="300" alt="Menu bar strip with Claude at 92%, Gemini 2%, Codex 0% and Grok 67% weekly">
+</picture>
 
-- macOS 15 or later.
-- To build from source: a Swift 6 toolchain, either Xcode 16 or later, or just the Command Line Tools (`xcode-select --install`).
-- At least one of the supported providers, signed in as described below.
+**A plain answer when you click.** The popover tells you in one line whether you can keep working ("All clear", "Claude is nearly out, back in 1 h 35 min"). Below it, a card per provider with its 5-hour, weekly and daily windows and when each one resets.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/popover-dark.png">
+  <img src="docs/popover-light.png" width="400" alt="Popover saying Claude is nearly out, back in 1 h 35 min, with a card per provider">
+</picture>
+
+**What used up your limit.** The dashboard charts the current window and splits it by session, so you see which project or agent run burned through it.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/dashboard-dark.png">
+  <img src="docs/dashboard-light.png" alt="Dashboard showing Claude at 92% of the 5-hour window, a stacked chart of which sessions used it, and a countdown to the reset">
+</picture>
+
+For Claude the split is estimated from Claude Code session logs. For Codex it is measured from Codex session logs.
+
+It refreshes every 5 minutes (configurable), when you open the popover, and on Cmd+R. The last values are cached, so the bar shows data right after launch.
 
 ## Install
 
-### Download
+1. Download `limitbar-<version>.dmg` from [Releases](https://github.com/Wake360/limitbar/releases). It runs on Apple silicon and Intel Macs with macOS 15 or later.
+2. Open the DMG and drag limitbar into Applications.
+3. Open limitbar. The app is not notarized by Apple, so macOS blocks the first launch. Go to System Settings > Privacy & Security, find "limitbar was blocked", and click Open Anyway.
 
-1. Download `limitbar-<version>.dmg` from [Releases](https://github.com/Wake360/limitbar/releases). It runs on Apple silicon and Intel Macs.
-2. Check the download against `limitbar-<version>.dmg.sha256` from the same release: run `shasum -a 256 -c limitbar-<version>.dmg.sha256` in the download folder and look for `OK`. Then open the DMG and drag limitbar into Applications.
-3. Open limitbar from Applications. The app is not notarized by Apple, so macOS blocks the first launch. Go to System Settings > Privacy & Security, scroll to "limitbar was blocked", and click Open Anyway.
+limitbar has no Dock icon. Look for it in the menu bar. To start it at login, turn on "Launch at login" at the bottom of the popover.
 
-If you prefer the terminal, this clears the block instead of step 3:
+<details>
+<summary>Verify the download, or skip the Gatekeeper step from the terminal</summary>
+
+Each release has a `limitbar-<version>.dmg.sha256` file. In the download folder, run:
+
+```sh
+shasum -a 256 -c limitbar-<version>.dmg.sha256
+```
+
+and look for `OK`.
+
+Instead of step 3, you can clear the block with:
 
 ```sh
 xattr -dr com.apple.quarantine /Applications/limitbar.app
 ```
 
-### Build from source
+</details>
 
-```sh
-git clone https://github.com/Wake360/limitbar.git
-cd limitbar
-scripts/bundle.sh
-mv limitbar.app /Applications/
-open /Applications/limitbar.app
-```
+## Connect your providers
 
-`scripts/bundle.sh` builds a release binary, assembles `limitbar.app` and code-signs it. The app has no Dock icon; look for it in the menu bar.
+You don't set anything up in limitbar. Sign in to the tools you already use and it picks them up. Providers you don't use stay hidden.
 
-To start it at login, open the popover, then Settings, and turn on "Launch at login".
-
-### Optional: a stable signing identity
-
-Without a signing certificate the script signs the app ad hoc. That works, but macOS treats every rebuild as a new app, so Full Disk Access has to be granted again after each update.
-
-A self-signed certificate keeps the Full Disk Access grant across rebuilds. It does not stop the Keychain prompts: for each item you allowed, macOS also records the code hash of that exact build. After every rebuild or update, each Keychain item limitbar reads asks once for your login password. Click "Always Allow" and it stays quiet until the next build. Only an Apple Developer ID signature avoids this.
-
-To create the certificate once:
-
-1. Open Keychain Access, then Keychain Access > Certificate Assistant > Create a Certificate.
-2. Name: `limitbar Local Signing`. Identity Type: Self Signed Root. Certificate Type: Code Signing.
-3. Click Create.
-
-`scripts/bundle.sh` uses it automatically when it exists.
-
-### Make a DMG
-
-```sh
-scripts/dmg.sh
-```
-
-This runs `scripts/bundle.sh` and writes `dist/limitbar-<version>.dmg`. The version comes from `CFBundleShortVersionString` in `Sources/limitbar/Resources/Info.plist`.
-
-## Providers
-
-| Provider | Where limitbar reads credentials | How to sign in |
+| Provider | How to sign in | Where limitbar reads it |
 | --- | --- | --- |
-| Claude | Keychain item `Claude Code-credentials` | Install [Claude Code](https://docs.claude.com/en/docs/claude-code) and run `claude` |
-| Codex | `~/.codex/auth.json` | Install the [Codex CLI](https://github.com/openai/codex) and run `codex login` |
-| Gemini | Keychain item from Antigravity (service `gemini`, account `antigravity`) | Open Antigravity and sign in |
-| Grok | A pasted `sso` cookie in Settings, or the grok.com cookie in Chrome, Brave, Arc, Edge or Chromium | Paste the cookie in Settings (recommended), or log in to grok.com in one of those browsers |
+| Claude | Install [Claude Code](https://docs.claude.com/en/docs/claude-code) and run `claude` | Keychain item `Claude Code-credentials` |
+| Codex | Install the [Codex CLI](https://github.com/openai/codex) and run `codex login` | `~/.codex/auth.json` |
+| Gemini | Open Antigravity and sign in | Keychain item from Antigravity (service `gemini`, account `antigravity`) |
+| Grok | Paste your `sso` cookie in Settings (recommended), or log in to grok.com in Chrome, Brave, Arc, Edge or Chromium | The pasted cookie, or the browser's cookie store |
 
-Providers you don't use just stay hidden from the menu bar.
+### What macOS will ask
 
-### First launch prompts
+**Keychain prompts.** The first time limitbar reads `Claude Code-credentials` or the Antigravity item, macOS asks for your login password. Click **Always Allow**. "Allow" alone works for one read, so it would ask again at every refresh. Each new version of limitbar asks once more.
 
-macOS will ask for permission the first time limitbar reads each credential:
+**Grok.** The simplest way: in grok.com, open your browser's developer tools, copy the value of the `sso` cookie, paste it in limitbar's Settings and press Save. limitbar then never touches your browser.
 
-- Keychain prompts for `Claude Code-credentials` and the Antigravity item. Click "Always Allow" and enter your login password. "Allow" alone works for one read only, so it would ask again at every refresh. Each new version of limitbar asks once more.
-- For Grok, paste the cookie in Settings: copy the value of the `sso` cookie from grok.com in your browser's developer tools, paste it, and press Save. With a saved cookie, limitbar never touches your browser.
-- Without a pasted cookie, limitbar reads it from your browser. That asks for your browser's "Safe Storage" Keychain key, which decrypts every cookie the browser holds for every site, and may ask for Full Disk Access, which covers all your files. Grant these only if you prefer that to pasting. For Full Disk Access, add limitbar in System Settings > Privacy & Security > Full Disk Access, then relaunch it.
+Without a pasted cookie, limitbar reads it from your browser. That needs your browser's "Safe Storage" Keychain key, which decrypts every cookie the browser holds for every site, and may need Full Disk Access, which covers all your files. Grant these only if you prefer that to pasting. For Full Disk Access, add limitbar in System Settings > Privacy & Security > Full Disk Access, then relaunch it.
 
-## Privacy and safety
+## Privacy
 
 - limitbar only reads credentials. It never refreshes Claude or Codex tokens, because refreshing outside the CLI can sign you out of it. When a token expires, the row tells you to run `claude` or `codex login`.
 - The Antigravity token is refreshed in memory for each fetch and never written back to the Keychain.
 - A pasted Grok cookie is stored in your login Keychain under `limitbar grok sso`.
-- Usage snapshots and a 14-day history are stored in `~/Library/Application Support/limitbar/`.
+- Usage snapshots and a 14-day history stay in `~/Library/Application Support/limitbar/`.
 - Session logs in `~/.claude/projects` and `~/.codex/sessions` are read locally for the dashboard chart and never sent anywhere.
 - Network requests go only to the providers' own usage endpoints. There is no telemetry.
 
-## Development
+## Troubleshooting
 
-```sh
-swift build
-swift test
-swift test --filter claudeParse
-```
+**A row says to sign in again.** The CLI's token expired. Run `claude` or `codex login` and limitbar picks up the new token on the next refresh.
 
-Each provider in `Sources/limitbar/Providers/` has a pure `parse` function tested against a fixture in `Tests/limitbarTests/Fixtures/`. See `CLAUDE.md` for an architecture overview.
+**A row shows old numbers.** The provider's endpoint failed or changed. limitbar keeps the last values and marks them stale. limitbar uses private, undocumented endpoints, so a provider can break a row without notice. Please [open an issue](https://github.com/Wake360/limitbar/issues).
 
-If the build fails on a beta macOS SDK, point it at an older one:
-
-```sh
-export SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk
-```
+**Keychain keeps asking.** You clicked "Allow" instead of "Always Allow". Click Always Allow on the next prompt.
 
 ## Uninstall
 
@@ -125,13 +122,13 @@ The last command only matters if you pasted a Grok cookie.
 
 ## Windows and Linux
 
-The Windows and Linux app lives in `tauri/` (Rust and Tauri). It is simpler than the macOS app: a tray icon whose menu lists the tightest limit per provider, and a window with the provider cards and settings. There is no drain chart.
+A simpler tray app lives in `tauri/` (Rust and Tauri): a tray icon whose menu lists the tightest limit per provider, and a window with the provider cards and settings. There is no drain chart.
 
 ### Install
 
-- Windows 10 or 11: download `limitbar_<version>_x64-setup.exe` from [Releases](https://github.com/Wake360/limitbar/releases) and run it. It installs for your user only and needs no admin rights. The installer is not signed, so SmartScreen may warn: click More info, then Run anyway.
-- Debian and Ubuntu: download `limitbar_<version>_amd64.deb` and run `sudo apt install ./limitbar_<version>_amd64.deb`.
-- Other distributions: download `limitbar_<version>_amd64.AppImage`, run `chmod +x` on it and start it.
+- **Windows 10 or 11:** download `limitbar_<version>_x64-setup.exe` from [Releases](https://github.com/Wake360/limitbar/releases) and run it. It installs for your user only and needs no admin rights. The installer is not signed, so SmartScreen may warn: click More info, then Run anyway.
+- **Debian and Ubuntu:** download `limitbar_<version>_amd64.deb` and run `sudo apt install ./limitbar_<version>_amd64.deb`.
+- **Other distributions:** download `limitbar_<version>_amd64.AppImage`, run `chmod +x` on it and start it.
 
 Each release has a `SHA256SUMS.txt`. Check a download before running it: `sha256sum --ignore-missing -c SHA256SUMS.txt` on Linux, or `Get-FileHash limitbar_<version>_x64-setup.exe` in PowerShell on Windows and compare it with the line in the file.
 
@@ -148,7 +145,37 @@ On GNOME, tray icons need the AppIndicator extension (`gnome-shell-extension-app
 
 The refresh interval is saved in the app's config folder. A pasted Grok cookie goes to the system keyring under service `limitbar`, user `grok sso`. The same credential rules apply as on macOS: Claude and Codex tokens are never refreshed.
 
-### Build from source
+## Build from source
+
+<details>
+<summary>macOS</summary>
+
+You need a Swift 6 toolchain: Xcode 16 or later, or just the Command Line Tools (`xcode-select --install`).
+
+```sh
+git clone https://github.com/Wake360/limitbar.git
+cd limitbar
+scripts/bundle.sh
+mv limitbar.app /Applications/
+open /Applications/limitbar.app
+```
+
+`scripts/bundle.sh` builds a release binary, assembles `limitbar.app` and code-signs it. `scripts/dmg.sh` runs it and writes `dist/limitbar-<version>.dmg`. The version comes from `CFBundleShortVersionString` in `Sources/limitbar/Resources/Info.plist`.
+
+**Optional: a stable signing identity.** Without a certificate the app is signed ad hoc, and macOS treats every rebuild as a new app, so Full Disk Access has to be granted again after each update. A self-signed certificate keeps that grant across rebuilds. Keychain items still ask once per build, because macOS records the code hash of each build. Only an Apple Developer ID signature avoids that.
+
+To create the certificate once:
+
+1. Open Keychain Access, then Keychain Access > Certificate Assistant > Create a Certificate.
+2. Name: `limitbar Local Signing`. Identity Type: Self Signed Root. Certificate Type: Code Signing.
+3. Click Create.
+
+`scripts/bundle.sh` uses it automatically when it exists.
+
+</details>
+
+<details>
+<summary>Windows and Linux</summary>
 
 Install Rust and the [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/) for your system, then:
 
@@ -160,16 +187,31 @@ npx @tauri-apps/cli@2 build
 
 Installers land in `tauri/target/release/bundle/`.
 
-### Releases
+</details>
+
+<details>
+<summary>Development and releases</summary>
+
+```sh
+swift build
+swift test
+swift test --filter claudeParse
+```
+
+Each provider in `Sources/limitbar/Providers/` has a pure `parse` function tested against a fixture in `Tests/limitbarTests/Fixtures/`. The screenshots in `docs/` come from `swift test --filter render`, which renders the views with sample data into the temporary folder.
+
+If the build fails on a beta macOS SDK, point it at an older one:
+
+```sh
+export SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk
+```
 
 Pushing a tag such as `v0.1.0` runs `.github/workflows/tauri.yml`, which builds the Windows and Linux installers and attaches them to a draft GitHub release. Build the macOS DMG locally with `scripts/dmg.sh` and add the DMG and its `.sha256` file to the same release.
 
-## Caveats
-
-limitbar uses private, undocumented endpoints. Any provider can change them without notice, and a row may break until the parser is updated. If that happens, please open an issue.
-
-This project is not affiliated with or endorsed by Anthropic, OpenAI, Google or xAI. Product names and logos belong to their owners.
+</details>
 
 ## License
 
 MIT, see [LICENSE](LICENSE).
+
+limitbar is not affiliated with or endorsed by Anthropic, OpenAI, Google or xAI. Product names and logos belong to their owners.

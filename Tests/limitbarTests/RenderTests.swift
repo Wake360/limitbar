@@ -4,13 +4,17 @@ import AppKit
 @testable import limitbar
 
 @MainActor private func writePNG<V: View>(_ view: V, scheme: ColorScheme, name: String) -> NSImage? {
-    let framed = view
-        .background(Color(nsColor: .windowBackgroundColor))
-        .environment(\.colorScheme, scheme)
-    let renderer = ImageRenderer(content: framed)
-    renderer.scale = 2
-    guard let image = renderer.nsImage, let tiff = image.tiffRepresentation,
-          let png = NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:]) else { return nil }
+    let host = NSHostingView(rootView: view.background(Color(nsColor: .windowBackgroundColor)))
+    host.appearance = NSAppearance(named: scheme == .dark ? .darkAqua : .aqua)
+    host.setFrameSize(host.fittingSize)
+    host.layoutSubtreeIfNeeded()
+    let pixels = NSSize(width: host.bounds.width * 2, height: host.bounds.height * 2)
+    guard let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: Int(pixels.width), pixelsHigh: Int(pixels.height), bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0) else { return nil }
+    rep.size = host.bounds.size
+    host.cacheDisplay(in: host.bounds, to: rep)
+    let image = NSImage(size: host.bounds.size)
+    image.addRepresentation(rep)
+    guard let png = rep.representation(using: .png, properties: [:]) else { return nil }
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent("limitbar-render")
     try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
     try? png.write(to: directory.appendingPathComponent(name))
@@ -49,6 +53,9 @@ private func scenarioFetcher(now: Date) -> Fetcher {
     await store.refresh()
     #expect(writePNG(PopoverView(store: store), scheme: .light, name: "popover-light.png") != nil)
     #expect(writePNG(PopoverView(store: store), scheme: .dark, name: "popover-dark.png") != nil)
+    let strip = Image(nsImage: MenuBarLabel.image(MenuBarLabel.items(store.status, now: now))).padding(.horizontal, 12).padding(.vertical, 6)
+    #expect(writePNG(strip, scheme: .light, name: "menubar-light.png") != nil)
+    #expect(writePNG(strip, scheme: .dark, name: "menubar-dark.png") != nil)
 }
 
 @MainActor @Test func renderDashboard() async throws {
