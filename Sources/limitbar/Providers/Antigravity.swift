@@ -54,15 +54,7 @@ enum Antigravity {
     }
 
     static func storedRefreshToken() throws -> String {
-        let query: [CFString: Any] = [
-            kSecClass: kSecClassGenericPassword,
-            kSecAttrService: "gemini",
-            kSecAttrAccount: "antigravity",
-            kSecReturnData: true,
-            kSecMatchLimit: kSecMatchLimitOne,
-        ]
-        var item: CFTypeRef?
-        guard SecItemCopyMatching(query as CFDictionary, &item) == errSecSuccess, let data = item as? Data else { throw CredentialError.missing(loginHint) }
+        guard let data = try? Credentials.securityPassword(service: "gemini", account: "antigravity") else { throw CredentialError.missing(loginHint) }
         return try refreshToken(from: data)
     }
 

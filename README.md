@@ -87,7 +87,9 @@ You don't set anything up in limitbar. Sign in to the tools you already use and 
 
 ### What macOS will ask
 
-**Keychain prompts.** The first time limitbar reads `Claude Code-credentials` or the Antigravity item, macOS asks for your login password. Click **Always Allow**. "Allow" alone works for one read, so it would ask again at every refresh. Each new version of limitbar asks once more.
+**Claude and Antigravity.** No prompt. limitbar reads their Keychain items through `/usr/bin/security`, the same tool Claude Code and Antigravity use to write them.
+
+**Keychain prompts.** A pasted Grok cookie, or your browser's Safe Storage key, asks for your login password once per version of limitbar. Click **Always Allow**. "Allow" alone works for one read, so it would ask again at every refresh.
 
 **Grok.** The simplest way: in grok.com, open your browser's developer tools, copy the value of the `sso` cookie, paste it in limitbar's Settings and press Save. limitbar then never touches your browser.
 
@@ -162,7 +164,7 @@ open /Applications/limitbar.app
 
 `scripts/bundle.sh` builds a release binary, assembles `limitbar.app` and code-signs it. `scripts/dmg.sh` runs it and writes `dist/limitbar-<version>.dmg`. The version comes from `CFBundleShortVersionString` in `Sources/limitbar/Resources/Info.plist`.
 
-**Optional: a stable signing identity.** Without a certificate the app is signed ad hoc, and macOS treats every rebuild as a new app, so Full Disk Access has to be granted again after each update. A self-signed certificate keeps that grant across rebuilds. Keychain items still ask once per build, because macOS records the code hash of each build. Only an Apple Developer ID signature avoids that.
+**Optional: a stable signing identity.** Without a certificate the app is signed ad hoc, and macOS treats every rebuild as a new app, so Full Disk Access has to be granted again after each update. A self-signed certificate keeps that grant across rebuilds. The Grok cookie and Safe Storage Keychain items still ask once per build, because macOS records the code hash of each build. Only an Apple Developer ID signature avoids that.
 
 To create the certificate once:
 

@@ -11,17 +11,22 @@ enum CredentialError: Error, Equatable {
 
 enum Credentials {
     static func keychainJSON<T: Decodable>(service: String, as: T.Type) throws -> T {
-        let query: [CFString: Any] = [
-            kSecClass: kSecClassGenericPassword,
-            kSecAttrService: service,
-            kSecReturnData: true,
-            kSecMatchLimit: kSecMatchLimitOne,
-        ]
-        var item: CFTypeRef?
-        let status = SecItemCopyMatching(query as CFDictionary, &item)
-        guard status != errSecItemNotFound else { throw CredentialError.missing(service) }
-        guard status == errSecSuccess, let data = item as? Data else { throw CredentialError.malformed(service) }
-        return try decode(data, as: T.self, source: service)
+        try decode(securityPassword(service: service), as: T.self, source: service)
+    }
+
+    static func securityPassword(service: String, account: String? = nil) throws -> Data {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/security")
+        process.arguments = ["find-generic-password", "-s", service] + (account.map { ["-a", $0] } ?? []) + ["-w"]
+        let output = Pipe()
+        process.standardOutput = output
+        process.standardError = FileHandle.nullDevice
+        try process.run()
+        let data = output.fileHandleForReading.readDataToEndOfFile()
+        process.waitUntilExit()
+        guard process.terminationStatus != 44 else { throw CredentialError.missing(service) }
+        guard process.terminationStatus == 0 else { throw CredentialError.malformed(service) }
+        return data.last == 10 ? data.dropLast() : data
     }
 
     static func hinted<T>(_ hint: String, _ body: () throws -> T) throws -> T {
