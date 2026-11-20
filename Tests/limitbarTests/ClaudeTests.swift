@@ -11,9 +11,10 @@ func fixture(_ name: String) throws -> Data {
     let s = try Claude.parse(try fixture("claude"), plan: "Max", now: Date(timeIntervalSince1970: 0))
     #expect(s.provider == .claude)
     #expect(s.plan == "Max")
-    #expect(s.windows.map(\.label) == ["5-hour", "Weekly", "Opus weekly"])
-    #expect(s.windows.map(\.usedPercent) == [6, 32, 12])
-    #expect(s.windows.map(\.kind) == [.fiveHour, .weekly, .weekly])
+    #expect(s.windows.map(\.label) == ["5-hour", "Weekly", "Opus weekly", "Fable weekly"])
+    #expect(s.windows.map(\.usedPercent) == [6, 32, 12, 64])
+    #expect(s.windows.map(\.kind) == [.fiveHour, .weekly, .weekly, .weekly])
+    #expect(s.windows[3].resetsAt != nil)
     #expect(s.windows[0].resetsAt == ISO8601DateFormatter().date(from: "2026-10-22T19:10:00Z"))
 }
 

@@ -22,6 +22,17 @@ enum Claude {
         let five_hour: Window?
         let seven_day: Window?
         let seven_day_opus: Window?
+        struct Limit: Decodable {
+            struct Scope: Decodable {
+                struct Model: Decodable { let display_name: String? }
+                let model: Model?
+            }
+            let kind: String
+            let percent: Double?
+            let resets_at: Date?
+            let scope: Scope?
+        }
+        let limits: [Limit]?
     }
 
     static func parse(_ data: Data, plan: String, now: Date) throws -> Snapshot {
@@ -37,6 +48,13 @@ enum Claude {
         }
         if let opus = u.seven_day_opus {
             windows.append(UsageWindow(label: "Opus weekly", usedPercent: opus.utilization, resetsAt: opus.resets_at, kind: .weekly))
+        }
+        // Per-model weekly limits (e.g. Fable) only appear in `limits`, as `weekly_scoped` with a model name.
+        for limit in u.limits ?? [] where limit.kind == "weekly_scoped" {
+            guard let model = limit.scope?.model?.display_name, let percent = limit.percent else { continue }
+            let label = "\(model) weekly"
+            guard !windows.contains(where: { $0.label == label }) else { continue }
+            windows.append(UsageWindow(label: label, usedPercent: percent, resetsAt: limit.resets_at, kind: .weekly))
         }
         guard !windows.isEmpty else { throw URLError(.badServerResponse) }
         return Snapshot(provider: .claude, plan: plan, windows: windows, fetchedAt: now)

@@ -137,11 +137,21 @@ struct ClaudeUsage {
     five_hour: Option<ClaudeWindow>,
     seven_day: Option<ClaudeWindow>,
     seven_day_opus: Option<ClaudeWindow>,
+    #[serde(default)]
+    limits: Vec<ClaudeLimit>,
+}
+
+#[derive(Deserialize)]
+struct ClaudeLimit {
+    kind: String,
+    percent: Option<f64>,
+    resets_at: Option<DateTime<Utc>>,
+    scope: Option<serde_json::Value>,
 }
 
 pub fn parse_claude(data: &[u8], plan: &str, now: DateTime<Utc>) -> Result<Snapshot, Error> {
     let u: ClaudeUsage = serde_json::from_slice(data)?;
-    let windows: Vec<Window> = [
+    let mut windows: Vec<Window> = [
         (u.five_hour, "5-hour", Kind::FiveHour),
         (u.seven_day, "Weekly", Kind::Weekly),
         (u.seven_day_opus, "Opus weekly", Kind::Weekly),
@@ -149,6 +159,14 @@ pub fn parse_claude(data: &[u8], plan: &str, now: DateTime<Utc>) -> Result<Snaps
     .into_iter()
     .filter_map(|(w, label, kind)| w.map(|w| Window { label: label.into(), used_percent: w.utilization, resets_at: w.resets_at, kind }))
     .collect();
+    // Per-model weekly limits (e.g. Fable) only appear in `limits`, as `weekly_scoped` with a model name.
+    for l in u.limits.into_iter().filter(|l| l.kind == "weekly_scoped") {
+        let (Some(model), Some(used_percent)) = (l.scope.as_ref().and_then(|s| s["model"]["display_name"].as_str()), l.percent) else { continue };
+        let label = format!("{model} weekly");
+        if !windows.iter().any(|w| w.label == label) {
+            windows.push(Window { label, used_percent, resets_at: l.resets_at, kind: Kind::Weekly });
+        }
+    }
     if windows.is_empty() {
         return Err(unexpected());
     }
@@ -479,8 +497,8 @@ mod tests {
     #[test]
     fn claude_fixture() {
         let s = parse_claude(include_bytes!("../../Tests/limitbarTests/Fixtures/claude.json"), "Max", at("2026-10-22T07:00:00Z")).unwrap();
-        assert_eq!(s.windows.iter().map(|w| w.label.as_str()).collect::<Vec<_>>(), ["5-hour", "Weekly", "Opus weekly"]);
-        assert_eq!(s.windows.iter().map(|w| w.used_percent).collect::<Vec<_>>(), [6.0, 32.0, 12.0]);
+        assert_eq!(s.windows.iter().map(|w| w.label.as_str()).collect::<Vec<_>>(), ["5-hour", "Weekly", "Opus weekly", "Fable weekly"]);
+        assert_eq!(s.windows.iter().map(|w| w.used_percent).collect::<Vec<_>>(), [6.0, 32.0, 12.0, 64.0]);
         assert_eq!(s.windows[0].resets_at, Some(at("2026-10-22T19:10:00Z")));
         assert!(parse_claude(b"{}", "Max", Utc::now()).is_err());
     }

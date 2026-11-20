@@ -1,3 +1,7 @@
 {"five_hour":{"utilization":6.0,"resets_at":"2026-10-22T19:10:00Z"},
  "seven_day":{"utilization":32.0,"resets_at":"2026-10-25T21:00:00Z"},
- "seven_day_opus":{"utilization":12.0,"resets_at":"2026-10-25T21:00:00Z"}}
+ "seven_day_opus":{"utilization":12.0,"resets_at":"2026-10-25T21:00:00Z"},
+ "limits":[
+  {"kind":"weekly_all","group":"weekly","percent":32,"resets_at":"2026-10-25T21:00:00.140006+00:00","scope":null},
+  {"kind":"weekly_scoped","group":"weekly","percent":64,"resets_at":"2026-10-25T21:00:00.140153+00:00","scope":{"model":{"id":null,"display_name":"Fable"},"surface":null}}
+ ]}
